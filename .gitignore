@@ -1,0 +1,31 @@
+# Secrets / local config — never commit
+.env
+.env.local
+
+# Local-only docs with real data examples
+CLAUDE.md
+
+# Large local metadata dump (the $metadata schema export)
+westmoreland.xml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Generated output
+*.csv
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
