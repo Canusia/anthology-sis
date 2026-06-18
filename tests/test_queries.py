@@ -257,6 +257,21 @@ class TestFlattenSectionRows:
         assert row["CourseClockHours"] == 0.0
         assert row["CourseDescription"].startswith("Surveys the history")
 
+    def test_parses_hs_course_title_from_note(self):
+        rows = [
+            {"ClassSectionId": 1, "TermCode": "T", "ClassSection": {
+                "Note": "HS COURSE TITLE: HONORS FINANCIAL ACCOUNTING II"}},
+            {"ClassSectionId": 2, "TermCode": "T", "ClassSection": {
+                "Note": "Youngwood"}},          # location note, not an HS title
+            {"ClassSectionId": 3, "TermCode": "T", "ClassSection": {
+                "Note": None}},
+        ]
+        flat, _ = q.flatten_section_rows(rows)
+        by_id = {r["ClassSectionId"]: r for r in flat}
+        assert by_id[1]["HsCourseTitle"] == "HONORS FINANCIAL ACCOUNTING II"
+        assert by_id[2]["HsCourseTitle"] is None
+        assert by_id[3]["HsCourseTitle"] is None
+
     def test_hoists_campus_and_delivery_method(self):
         rows = [{"ClassSectionId": 111277, "TermCode": "T", "ClassSection": {
             "CampusId": 5,

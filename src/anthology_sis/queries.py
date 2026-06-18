@@ -14,7 +14,7 @@ from typing import Any, Iterable
 # StartDate/EndDate are the section's own run dates (distinct from the Term dates).
 SECTION_SELECT = (
     "Id,CourseCode,SectionName,SectionCode,StartDate,EndDate,IsActive,IsCancelled,"
-    "MaximumStudents,NumberRegisteredStudents,CampusId,CourseId,InstructorId"
+    "MaximumStudents,NumberRegisteredStudents,CampusId,CourseId,InstructorId,Note"
 )
 
 # Course catalog detail, reached from a ClassSection via the Course nav property.
@@ -80,7 +80,7 @@ DELIVERY_METHOD_SELECT = "Id,Code,Name"
 # Output column order for flattened section CSV rows.
 SECTION_CSV_FIELDS = [
     "ClassSectionId", "TermId", "TermCode", "TermName",
-    "CourseCode", "SectionCode", "SectionName",
+    "CourseCode", "SectionCode", "SectionName", "HsCourseTitle",
     "SectionStartDate", "SectionEndDate",
     "CourseName", "CourseCreditHours", "CourseClockHours", "CourseDescription",
     "IsActive", "IsCancelled",
@@ -296,6 +296,23 @@ def section_expand() -> str:
     return f"ClassSection($select={SECTION_SELECT};$expand={nested})"
 
 
+def _hs_course_title(note: Any) -> str | None:
+    """Extract the high-school course title from a section Note.
+
+    Dual-enrollment sections store it as free text: 'HS COURSE TITLE: <name>'
+    (e.g. 'HS COURSE TITLE: HONORS FINANCIAL ACCOUNTING II'). Returns the title
+    after the marker, or None when the marker isn't present (most Notes are just a
+    location label like 'Youngwood'/'Online', or empty).
+    """
+    if not isinstance(note, str):
+        return None
+    marker = "HS COURSE TITLE:"
+    idx = note.upper().find(marker)
+    if idx == -1:
+        return None
+    return note[idx + len(marker):].strip() or None
+
+
 def _seats_open(cap: Any, registered: Any) -> int | None:
     """Seats remaining for a section, or None if either count is missing.
 
@@ -343,6 +360,8 @@ def flatten_section_rows(
             "CourseCode": sec.get("CourseCode"),
             "SectionCode": sec.get("SectionCode"),
             "SectionName": sec.get("SectionName"),
+            # Dual-enrollment HS course title, parsed from the free-text Note.
+            "HsCourseTitle": _hs_course_title(sec.get("Note")),
             "SectionStartDate": sec.get("StartDate"),
             "SectionEndDate": sec.get("EndDate"),
             # Course catalog detail: Name is the title, Note the description.

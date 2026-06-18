@@ -86,6 +86,9 @@ Each row is one section (deduped on `ClassSectionId`) enriched via nested `$expa
 - **Section:** `SectionStartDate` / `SectionEndDate` (the section's own run dates,
   not the term's), plus `IsActive`, `IsCancelled`, `MaximumStudents`,
   `NumberRegisteredStudents`, and a derived `SeatsOpen` (capacity − registered).
+- **`HsCourseTitle`:** for dual-enrollment sections, the high-school course title
+  parsed from the free-text `Note` (`HS COURSE TITLE: <name>`); empty when the marker
+  isn't present.
 - **Location / modality** (resolved lookup entities): `CampusCode`/`CampusName` and
   `DeliveryMethodCode`/`DeliveryMethod` (e.g. `F2F` Face to Face, `HSC` High School).
   These are clean Id/Code/Name lookups — unlike the free-text `Note` location label.
